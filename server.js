@@ -12,17 +12,12 @@ const XLSX = require('xlsx');
 
 const db = require('./db/database');
 const { processUploadedFiles, normalizeImageUrl } = require('./lib/images');
+const { initStoragePaths } = require('./lib/paths');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'darjeeling-secret-key-2024';
-const DATA_DIR = process.env.DATA_DIR;
-
-// Ensure uploads dir exists
-const UPLOAD_DIR = DATA_DIR
-  ? path.join(DATA_DIR, 'uploads')
-  : path.join(__dirname, 'public/uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const { dataDir: DATA_DIR, uploadDir: UPLOAD_DIR } = initStoragePaths();
 
 function seedUploadsIfNeeded() {
   if (!DATA_DIR) return;
@@ -240,4 +235,7 @@ app.post('/api/upload', authMiddleware, upload.array('files', 10), async (req, r
 app.get(['/admin', '/admin/'], (req, res) => res.sendFile(path.join(__dirname, 'public/admin.html')));
 app.get('/{*splat}', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
 
-app.listen(PORT, () => console.log(`🏔️  Darjeeling Homestay running on http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🏔️  Darjeeling Homestay running on port ${PORT}`);
+  if (DATA_DIR) console.log(`📁 Persistent storage: ${DATA_DIR}`);
+});

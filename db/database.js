@@ -1,16 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { initStoragePaths, ensureDir } = require('../lib/paths');
 
+const { dataDir: DATA_DIR, dbPath: DB_PATH } = initStoragePaths();
 const SEED_PATH = path.join(__dirname, 'data');
-const DB_PATH = process.env.DATA_DIR
-  ? path.join(process.env.DATA_DIR, 'db')
-  : SEED_PATH;
-
-if (!fs.existsSync(DB_PATH)) fs.mkdirSync(DB_PATH, { recursive: true });
 
 function seedDataIfNeeded() {
-  if (!process.env.DATA_DIR) return;
+  if (!DATA_DIR) return;
+  if (!fs.existsSync(SEED_PATH)) return;
   for (const file of fs.readdirSync(SEED_PATH)) {
     if (!file.endsWith('.json')) continue;
     const dest = path.join(DB_PATH, file);

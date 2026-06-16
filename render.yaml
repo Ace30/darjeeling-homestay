@@ -12,8 +12,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATA_DIR
-        value: /var/data
+        value: /opt/render/project/src/persistent
     disk:
       name: homestay-data
-      mountPath: /var/data
+      mountPath: /opt/render/project/src/persistent
       sizeGB: 1
