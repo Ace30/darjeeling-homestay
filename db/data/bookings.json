@@ -1,0 +1,18 @@
+[
+  {
+    "id": "55825a0e-cf58-4312-aebf-275f63a1032c",
+    "bookingRef": "DH-MQFWHT2K",
+    "status": "pending",
+    "createdAt": "2026-06-16T00:25:22.028Z",
+    "propertyId": "1b15739d-a224-4529-bc6e-7db8969f3a7a",
+    "propertyName": "Kanchenjunga View Cottage",
+    "guestName": "efg",
+    "guestEmail": "sdgh",
+    "guestPhone": "dgsnb",
+    "guestCount": "3",
+    "checkIn": "2026-06-27",
+    "checkOut": "2026-06-30",
+    "totalAmount": 11760,
+    "specialRequests": "dgbh"
+  }
+]

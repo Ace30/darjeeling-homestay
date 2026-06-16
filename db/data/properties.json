@@ -1,0 +1,113 @@
+[
+  {
+    "id": "1b15739d-a224-4529-bc6e-7db8969f3a7a",
+    "createdAt": "2026-06-16T00:08:36.746Z",
+    "name": "Kanchenjunga View Cottage",
+    "description": "A cozy heritage cottage perched at 6,800 ft with sweeping views of Kanchenjunga. Wake up to misty mornings, sip first-flush Darjeeling tea on your private balcony, and let the mountains restore your soul.",
+    "location": "Tiger Hill, Darjeeling",
+    "coordinates": {
+      "lat": 27.013,
+      "lng": 88.2627
+    },
+    "pricePerNight": 3500,
+    "maxGuests": 4,
+    "amenities": [
+      "Mountain View",
+      "Hot Water",
+      "Free WiFi",
+      "Breakfast Included",
+      "Fireplace",
+      "Balcony",
+      "Tea Garden Access",
+      "Parking"
+    ],
+    "images": [],
+    "contact": {
+      "phone": "+91 98765 43210",
+      "email": "stay@darjeelinghills.in",
+      "whatsapp": "+919876543210"
+    }
+  },
+  {
+    "id": "8ff557b4-eba9-4113-a8e5-e5b6dc2e9174",
+    "createdAt": "2026-06-16T00:08:36.746Z",
+    "name": "Tea Garden Bungalow",
+    "description": "Step back into colonial charm in this beautifully restored planter's bungalow, surrounded by lush tea bushes. Experience the magic of tea plucking season and enjoy home-cooked Nepali meals.",
+    "location": "Happy Valley Tea Estate, Darjeeling",
+    "coordinates": {
+      "lat": 27.048,
+      "lng": 88.252
+    },
+    "pricePerNight": 4800,
+    "maxGuests": 6,
+    "amenities": [
+      "Tea Tasting",
+      "Garden View",
+      "Hot Water",
+      "Home Cooked Meals",
+      "Bonfire",
+      "Trekking Guide",
+      "Toy Train Access"
+    ],
+    "images": [],
+    "contact": {
+      "phone": "+91 98765 43210",
+      "email": "stay@darjeelinghills.in",
+      "whatsapp": "+919876543210"
+    }
+  },
+  {
+    "id": "206273e6-e386-4129-a84d-39bdda77018d",
+    "createdAt": "2026-06-16T00:33:18.497Z",
+    "name": "varshit",
+    "description": "sexy",
+    "location": "hfgfh",
+    "coordinates": {
+      "lat": 27.034723,
+      "lng": 88.263504
+    },
+    "pricePerNight": 3000,
+    "maxGuests": 2,
+    "amenities": [
+      "everything"
+    ],
+    "images": [
+      "/uploads/dc462d12-20ee-4a3e-931f-4728e996bff7.jpg",
+      "/uploads/26b00c17-8375-403a-a0ce-06b69b88dc81.jpg",
+      "/uploads/ee9d7442-1c3d-4f4a-a46f-c44d48b736cd.jpg",
+      "/uploads/e6e7f5b1-fcc1-4c2a-808b-96c96c3a9d42.jpg",
+      "/uploads/99a7d2ef-d6cf-4fbc-93c0-b96df32fb4bc.jpg"
+    ],
+    "contact": {
+      "phone": "+91 9381992548",
+      "email": "goudvarshit658@gmail.com",
+      "whatsapp": "+91 9381992548"
+    },
+    "updatedAt": "2026-06-16T00:44:02.736Z"
+  },
+  {
+    "id": "312935ce-a53e-4430-bebf-ef2056db8b7f",
+    "createdAt": "2026-06-16T00:51:53.978Z",
+    "name": "biswas",
+    "description": "kuch bi",
+    "location": "darjling",
+    "coordinates": {
+      "lat": 27.043491,
+      "lng": 88.260296
+    },
+    "pricePerNight": 1200,
+    "maxGuests": 12,
+    "amenities": [
+      "sab kuch"
+    ],
+    "images": [
+      "/uploads/101460ba-aeeb-4172-bd85-056b6f5e84c9.jpg",
+      "/uploads/5db1f38c-a139-407c-9c2a-4b948eab94d3.jpg"
+    ],
+    "contact": {
+      "phone": "jdgfngfjhn",
+      "email": "dhfvndfhn",
+      "whatsapp": "dnfvdfhjn"
+    }
+  }
+]

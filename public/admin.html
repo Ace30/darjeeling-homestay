@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · Darjeeling Hills Homestay</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --pine: #1E3A2F;
+  --pine-light: #2D5443;
+  --tea: #B5924C;
+  --tea-light: #D4AD6B;
+  --cloud: #F7F5F0;
+  --mist: #E8EDF2;
+  --ink: #1A1A1A;
+  --fog: #6B7280;
+  --white: #fff;
+  --danger: #DC2626;
+  --success: #16A34A;
+  --warning: #D97706;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(30,58,47,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: var(--ink); }
+
+/* ── LOGIN ── */
+#loginScreen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #0d2318, #1E3A2F);
+}
+.login-card {
+  background: var(--white); border-radius: 20px; padding: 48px 40px;
+  width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-logo { text-align: center; margin-bottom: 30px; }
+.login-logo .icon { font-size: 2.5rem; }
+.login-logo h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--pine); margin-top: 8px; }
+.login-logo p { font-size: 0.8rem; color: var(--fog); margin-top: 4px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.login-field input {
+  width: 100%; border: 1.5px solid var(--mist); border-radius: var(--radius);
+  padding: 12px 14px; font-size: 0.9rem; outline: none; transition: border 0.2s;
+}
+.login-field input:focus { border-color: var(--pine); }
+.btn-login {
+  width: 100%; background: var(--pine); color: var(--white); border: none;
+  border-radius: 50px; padding: 13px; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; margin-top: 6px;
+}
+.btn-login:hover { background: var(--pine-light); }
+.login-error { color: var(--danger); font-size: 0.82rem; text-align: center; margin-top: 10px; display: none; }
+
+/* ── LAYOUT ── */
+#adminApp { display: none; min-height: 100vh; }
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+  background: var(--pine); z-index: 100; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sidebar-brand {
+  padding: 22px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand .icon { font-size: 1.4rem; }
+.sidebar-brand h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--white); margin-top: 4px; }
+.sidebar-brand p { font-size: 0.7rem; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+.sidebar-nav { padding: 16px 0; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 20px; color: rgba(255,255,255,0.7);
+  cursor: pointer; transition: all 0.15s; font-size: 0.88rem;
+  font-weight: 500; border: none; background: none; width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+.nav-item.active { background: rgba(181,146,76,0.2); color: var(--tea-light); border-right: 3px solid var(--tea); }
+.nav-item .nav-icon { font-size: 1.05rem; width: 20px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1);
+}
+.admin-badge {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--tea); display: flex; align-items: center; justify-content: center;
+  color: var(--white); font-weight: 700; font-size: 0.9rem;
+}
+.admin-name { font-size: 0.82rem; color: rgba(255,255,255,0.8); font-weight: 500; }
+.btn-logout {
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+  border: none; border-radius: 8px; padding: 8px 14px;
+  font-size: 0.78rem; cursor: pointer; width: 100%;
+  font-family: 'Inter', sans-serif; transition: background 0.2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.15); color: var(--white); }
+
+.main { margin-left: 240px; padding: 28px 32px; }
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px;
+}
+.page-title h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--pine); }
+.page-title p { font-size: 0.85rem; color: var(--fog); margin-top: 2px; }
+
+/* ── CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px 22px; box-shadow: var(--shadow);
+}
+.stat-card .label { font-size: 0.75rem; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: 1px; }
+.stat-card .value { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: var(--pine); margin: 4px 0; }
+.stat-card .sub { font-size: 0.78rem; color: var(--tea); font-weight: 500; }
+
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.card-header {
+  padding: 18px 22px; border-bottom: 1px solid var(--mist);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--pine); }
+
+/* ── BUTTONS ── */
+.btn { border: none; border-radius: 8px; padding: 9px 18px; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: var(--pine); color: var(--white); }
+.btn-primary:hover { background: var(--pine-light); }
+.btn-tea { background: var(--tea); color: var(--white); }
+.btn-tea:hover { background: var(--tea-light); }
+.btn-danger { background: var(--danger); color: var(--white); }
+.btn-danger:hover { opacity: 0.85; }
+.btn-sm { padding: 5px 12px; font-size: 0.76rem; }
+.btn-outline-sm { background: none; border: 1.5px solid var(--mist); color: var(--fog); border-radius: 8px; padding: 5px 12px; font-size: 0.76rem; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; }
+.btn-outline-sm:hover { border-color: var(--pine); color: var(--pine); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { background: #f8f9fa; padding: 12px 16px; text-align: left; font-size: 0.72rem; font-weight: 600; color: var(--fog); text-transform: uppercase; letter-spacing: 0.8px; }
+td { padding: 13px 16px; border-top: 1px solid var(--mist); vertical-align: middle; }
+tr:hover td { background: #fafafa; }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 50px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.badge-pending { background: #FEF3C7; color: var(--warning); }
+.badge-confirmed { background: #D1FAE5; color: var(--success); }
+.badge-cancelled { background: #FEE2E2; color: var(--danger); }
+
+/* ── FORMS ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; border: 1.5px solid var(--mist); border-radius: var(--radius);
+  padding: 11px 14px; font-family: 'Inter', sans-serif; font-size: 0.88rem;
+  outline: none; transition: border 0.2s; background: var(--white);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--pine); }
+.form-group textarea { resize: vertical; min-height: 90px; }
+.form-hint { font-size: 0.75rem; color: var(--fog); margin-top: 4px; }
+
+/* ── MAP PICKER ── */
+#pickerMap { height: 240px; border-radius: var(--radius); overflow: hidden; border: 1.5px solid var(--mist); margin-top: 8px; }
+
+/* ── IMAGE PREVIEW ── */
+.image-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.img-thumb {
+  width: 80px; height: 80px; border-radius: 8px; object-fit: cover;
+  border: 2px solid var(--mist); position: relative;
+}
+.img-thumb-wrap { position: relative; }
+.img-remove {
+  position: absolute; top: -6px; right: -6px;
+  background: var(--danger); color: var(--white);
+  border: none; border-radius: 50%; width: 20px; height: 20px;
+  font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.5); display: none;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--white); border-radius: 16px;
+  max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;
+}
+.modal-box-header {
+  padding: 20px 26px; border-bottom: 1px solid var(--mist);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--white); z-index: 10;
+}
+.modal-box-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--pine); }
+.modal-close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--fog); }
+.modal-box-body { padding: 24px 26px; }
+.modal-box-footer { padding: 16px 26px; border-top: 1px solid var(--mist); display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── PAGE SECTIONS ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--pine); color: var(--white);
+  padding: 12px 22px; border-radius: 10px; font-size: 0.88rem;
+  transform: translateY(80px); opacity: 0; transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: var(--danger); }
+.toast.success { background: var(--success); }
+
+.loader { display: flex; justify-content: center; padding: 40px; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--mist); border-top-color: var(--pine); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 50px; color: var(--fog); }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+/* Review stars */
+.star-gold { color: #F59E0B; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🏔️</div>
+      <h1>Darjeeling Hills Homestay</h1>
+      <p>ADMIN PORTAL</p>
+    </div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="loginError">Invalid username or password</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="icon">🏔️</div>
+      <h2>Admin Panel</h2>
+      <p>DARJEELING HOMESTAY</p>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="showPage('properties')"><span class="nav-icon">🏡</span> Properties</button>
+      <button class="nav-item" onclick="showPage('bookings')"><span class="nav-icon">📅</span> Bookings</button>
+      <button class="nav-item" onclick="showPage('guests')"><span class="nav-icon">👥</span> Guests</button>
+      <button class="nav-item" onclick="showPage('reviews')"><span class="nav-icon">⭐</span> Reviews</button>
+      <button class="nav-item" onclick="window.open('/','_blank')"><span class="nav-icon">🌐</span> View Website</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="admin-badge">
+        <div class="admin-avatar" id="adminAvatar">A</div>
+        <div class="admin-name" id="adminName">Admin</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">← Sign Out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">
+          <h2>Dashboard</h2>
+          <p>Welcome back! Here's what's happening today.</p>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Properties</div><div class="value" id="dProps">—</div><div class="sub">Active listings</div></div>
+        <div class="stat-card"><div class="label">Total Bookings</div><div class="value" id="dBookings">—</div><div class="sub">All time</div></div>
+        <div class="stat-card"><div class="label">Guests</div><div class="value" id="dGuests">—</div><div class="sub">Registered</div></div>
+        <div class="stat-card"><div class="label">Revenue</div><div class="value" id="dRevenue">—</div><div class="sub">Confirmed bookings</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header"><h3>Recent Bookings</h3></div>
+          <div id="recentBookings" class="loader"><div class="spinner"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Recent Reviews</h3></div>
+          <div id="recentReviews" class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPERTIES -->
+    <div class="page" id="page-properties">
+      <div class="page-header">
+        <div class="page-title"><h2>Properties</h2><p>Manage your listings</p></div>
+        <button class="btn btn-primary" onclick="openPropModal()">+ Add Property</button>
+      </div>
+      <div class="card">
+        <div id="propertiesTable" class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div class="page-header">
+        <div class="page-title"><h2>Bookings</h2><p>Track all reservations</p></div>
+      </div>
+      <div class="card">
+        <div id="bookingsTable" class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- GUESTS -->
+    <div class="page" id="page-guests">
+      <div class="page-header">
+        <div class="page-title"><h2>Guests</h2><p>Guest database</p></div>
+        <button class="btn btn-primary" onclick="downloadGuests()">📥 Download Excel</button>
+      </div>
+      <div class="card">
+        <div id="guestsTable" class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="page" id="page-reviews">
+      <div class="page-header">
+        <div class="page-title"><h2>Reviews</h2><p>Guest feedback</p></div>
+      </div>
+      <div class="card">
+        <div id="reviewsTable" class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal-overlay" id="propModal">
+  <div class="modal-box">
+    <div class="modal-box-header">
+      <h3 id="propModalTitle">Add Property</h3>
+      <button class="modal-close-btn" onclick="closeModal('propModal')">✕</button>
+    </div>
+    <div class="modal-box-body">
+      <input type="hidden" id="propId" />
+      <div class="form-grid">
+        <div class="form-group"><label>Property Name *</label><input type="text" id="propName" placeholder="e.g. Kanchenjunga View Cottage" /></div>
+        <div class="form-group"><label>Location / Area *</label><input type="text" id="propLocation" placeholder="e.g. Tiger Hill, Darjeeling" /></div>
+        <div class="form-group"><label>Price Per Night (₹) *</label><input type="number" id="propPrice" placeholder="2500" /></div>
+        <div class="form-group"><label>Max Guests</label><input type="number" id="propGuests" placeholder="4" value="2" /></div>
+        <div class="form-group full"><label>Description *</label><textarea id="propDesc" placeholder="Describe the property, views, ambiance…"></textarea></div>
+        <div class="form-group full"><label>Amenities (comma-separated)</label><input type="text" id="propAmenities" placeholder="Free WiFi, Hot Water, Tea Garden View, Mountain View, Parking" /><div class="form-hint">e.g. Free WiFi, Hot Water, Fireplace, Breakfast Included</div></div>
+        <div class="form-group"><label>Owner Phone *</label><input type="tel" id="propPhone" placeholder="+91 9876543210" /></div>
+        <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="propWhatsapp" placeholder="+91 9876543210" /></div>
+        <div class="form-group full"><label>Email Address</label><input type="email" id="propEmail" placeholder="owner@email.com" /></div>
+      </div>
+      <div class="form-group">
+        <label>📍 Property Location on Map</label>
+        <div class="form-hint" style="margin-bottom:6px">Click on the map to set the exact location of your property</div>
+        <div id="pickerMap"></div>
+        <div style="display:flex;gap:12px;margin-top:10px">
+          <div class="form-group" style="flex:1;margin:0"><label>Latitude</label><input type="number" id="propLat" placeholder="27.0350" step="0.0001" /></div>
+          <div class="form-group" style="flex:1;margin:0"><label>Longitude</label><input type="number" id="propLng" placeholder="88.2627" step="0.0001" /></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Property Photos</label>
+        <input type="file" id="propImages" accept="image/*" multiple onchange="previewImages()" />
+        <div class="image-preview" id="imagePreviews"></div>
+        <input type="hidden" id="existingImages" value="[]" />
+      </div>
+    </div>
+    <div class="modal-box-footer">
+      <button class="btn btn-outline-sm" onclick="closeModal('propModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProperty()">Save Property</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-box-header">
+      <h3>Booking Details</h3>
+      <button class="modal-close-btn" onclick="closeModal('bookingModal')">✕</button>
+    </div>
+    <div class="modal-box-body" id="bookingDetailBody"></div>
+    <div class="modal-box-footer" id="bookingDetailFooter"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let token = localStorage.getItem('dhToken');
+let pickerMap = null, pickerMarker = null;
+let editingPropId = null;
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    token = data.token;
+    localStorage.setItem('dhToken', token);
+    document.getElementById('adminName').textContent = data.name || 'Admin';
+    document.getElementById('adminAvatar').textContent = (data.name || 'A')[0].toUpperCase();
+    showApp();
+  } catch {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('dhToken');
+  token = null;
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  loadDashboard();
+}
+
+// Auto-login if token exists
+if (token) {
+  fetch('/api/admin/dashboard', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(() => showApp())
+    .catch(() => { localStorage.removeItem('dhToken'); token = null; });
+}
+
+function api(path, opts = {}) {
+  return fetch(path, { ...opts, headers: { ...(opts.headers||{}), Authorization: 'Bearer ' + token } });
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','properties','bookings','guests','reviews','website'].indexOf(name)]?.classList.add('active');
+
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'properties') loadProperties();
+  if (name === 'bookings') loadBookings();
+  if (name === 'guests') loadGuests();
+  if (name === 'reviews') loadReviews();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const data = await api('/api/admin/dashboard').then(r => r.json());
+    document.getElementById('dProps').textContent = data.totalProperties;
+    document.getElementById('dBookings').textContent = data.totalBookings;
+    document.getElementById('dGuests').textContent = data.totalGuests;
+    document.getElementById('dRevenue').textContent = '₹' + (data.revenue || 0).toLocaleString('en-IN');
+
+    const rb = document.getElementById('recentBookings');
+    rb.className = '';
+    if (!data.recentBookings?.length) { rb.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No bookings yet</p></div>'; }
+    else { rb.innerHTML = `<table><thead><tr><th>Ref</th><th>Guest</th><th>Property</th><th>Status</th></tr></thead><tbody>${data.recentBookings.map(b => `<tr><td><code>${b.bookingRef}</code></td><td>${b.guestName}</td><td>${b.propertyName||'—'}</td><td><span class="badge badge-${b.status}">${b.status}</span></td></tr>`).join('')}</tbody></table>`; }
+
+    const rr = document.getElementById('recentReviews');
+    rr.className = '';
+    if (!data.recentReviews?.length) { rr.innerHTML = '<div class="empty-state"><div class="icon">⭐</div><p>No reviews yet</p></div>'; }
+    else { rr.innerHTML = `<table><thead><tr><th>Guest</th><th>Rating</th><th>Comment</th></tr></thead><tbody>${data.recentReviews.map(r => `<tr><td>${r.guestName}</td><td class="star-gold">${'★'.repeat(r.rating)}</td><td>${(r.comment||'').substring(0,50)}…</td></tr>`).join('')}</tbody></table>`; }
+  } catch {}
+}
+
+// ── PROPERTIES ────────────────────────────────────────────────
+async function loadProperties() {
+  const el = document.getElementById('propertiesTable');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  try {
+    const props = await api('/api/admin/properties').then(r => r.json());
+    if (!props.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🏡</div><p>No properties yet. Add your first one!</p></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Property</th><th>Location</th><th>Price/Night</th><th>Max Guests</th><th>Images</th><th>Actions</th></tr></thead>
+      <tbody>${props.map(p => `<tr>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.location || '—'}</td>
+        <td>₹${(p.pricePerNight||0).toLocaleString('en-IN')}</td>
+        <td>${p.maxGuests || 2} guests</td>
+        <td>${p.images?.length || 0} photo(s)</td>
+        <td style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-outline-sm" onclick="editProperty('${p.id}')">✏️ Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProperty('${p.id}','${p.name}')">🗑️ Delete</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch { el.innerHTML = '<div class="empty-state"><p>Error loading properties</p></div>'; }
+}
+
+function openPropModal(prop = null) {
+  editingPropId = prop?.id || null;
+  document.getElementById('propModalTitle').textContent = prop ? 'Edit Property' : 'Add New Property';
+  document.getElementById('propId').value = prop?.id || '';
+  document.getElementById('propName').value = prop?.name || '';
+  document.getElementById('propLocation').value = prop?.location || '';
+  document.getElementById('propPrice').value = prop?.pricePerNight || '';
+  document.getElementById('propGuests').value = prop?.maxGuests || 2;
+  document.getElementById('propDesc').value = prop?.description || '';
+  document.getElementById('propAmenities').value = (prop?.amenities || []).join(', ');
+  document.getElementById('propPhone').value = prop?.contact?.phone || '';
+  document.getElementById('propWhatsapp').value = prop?.contact?.whatsapp || '';
+  document.getElementById('propEmail').value = prop?.contact?.email || '';
+  document.getElementById('propLat').value = prop?.coordinates?.lat || '';
+  document.getElementById('propLng').value = prop?.coordinates?.lng || '';
+  document.getElementById('existingImages').value = JSON.stringify(prop?.images || []);
+
+  // Image previews
+  const preview = document.getElementById('imagePreviews');
+  preview.innerHTML = (prop?.images || []).map((img, i) => `
+    <div class="img-thumb-wrap">
+      <img class="img-thumb" src="${img}" alt="" />
+      <button class="img-remove" onclick="removeExistingImage(${i})">✕</button>
+    </div>`).join('');
+
+  document.getElementById('propModal').classList.add('open');
+
+  // Init map
+  setTimeout(() => {
+    if (pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
+    const lat = prop?.coordinates?.lat || 27.0350;
+    const lng = prop?.coordinates?.lng || 88.2627;
+    pickerMap = L.map('pickerMap').setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(pickerMap);
+    if (prop?.coordinates?.lat) {
+      pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+    }
+    pickerMap.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      document.getElementById('propLat').value = lat.toFixed(6);
+      document.getElementById('propLng').value = lng.toFixed(6);
+      if (pickerMarker) pickerMarker.setLatLng([lat, lng]);
+      else pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+    });
+  }, 150);
+}
+
+function removeExistingImage(idx) {
+  const imgs = JSON.parse(document.getElementById('existingImages').value);
+  imgs.splice(idx, 1);
+  document.getElementById('existingImages').value = JSON.stringify(imgs);
+  const preview = document.getElementById('imagePreviews');
+  preview.querySelectorAll('.img-thumb-wrap')[idx]?.remove();
+  // Re-index remove buttons
+  preview.querySelectorAll('.img-remove').forEach((btn, i) => btn.setAttribute('onclick', `removeExistingImage(${i})`));
+}
+
+function previewImages() {
+  const files = document.getElementById('propImages').files;
+  const preview = document.getElementById('imagePreviews');
+  // Only add new file previews, keep existing
+  const existingWrap = preview.querySelectorAll('.img-thumb-wrap');
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'img-thumb-wrap new-img';
+      wrap.innerHTML = `<img class="img-thumb" src="${e.target.result}" /><span style="position:absolute;top:-6px;left:-6px;background:var(--tea);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.65rem">new</span>`;
+      preview.appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveProperty() {
+  const name = document.getElementById('propName').value.trim();
+  const price = document.getElementById('propPrice').value;
+  if (!name || !price) { showToast('Name and price are required', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('description', document.getElementById('propDesc').value);
+  formData.append('location', document.getElementById('propLocation').value);
+  formData.append('lat', document.getElementById('propLat').value);
+  formData.append('lng', document.getElementById('propLng').value);
+  formData.append('pricePerNight', price);
+  formData.append('maxGuests', document.getElementById('propGuests').value);
+  formData.append('amenities', document.getElementById('propAmenities').value);
+  formData.append('contactPhone', document.getElementById('propPhone').value);
+  formData.append('contactWhatsapp', document.getElementById('propWhatsapp').value);
+  formData.append('contactEmail', document.getElementById('propEmail').value);
+  formData.append('existingImages', document.getElementById('existingImages').value);
+
+  const files = document.getElementById('propImages').files;
+  Array.from(files).forEach(f => formData.append('images', f));
+
+  try {
+    const id = editingPropId;
+    const url = id ? `/api/admin/properties/${id}` : '/api/admin/properties';
+    const method = id ? 'PUT' : 'POST';
+    const res = await api(url, { method, body: formData });
+    if (!res.ok) throw new Error();
+    showToast(id ? 'Property updated!' : 'Property added!', 'success');
+    closeModal('propModal');
+    loadProperties();
+  } catch { showToast('Error saving property', 'error'); }
+}
+
+async function editProperty(id) {
+  try {
+    const res = await fetch(`/api/properties/${id}`);
+    const prop = await res.json();
+    openPropModal(prop);
+  } catch { showToast('Could not load property', 'error'); }
+}
+
+async function deleteProperty(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  await api(`/api/admin/properties/${id}`, { method: 'DELETE' });
+  showToast('Property deleted');
+  loadProperties();
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────
+async function loadBookings() {
+  const el = document.getElementById('bookingsTable');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  try {
+    const bookings = await api('/api/admin/bookings').then(r => r.json());
+    if (!bookings.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>No bookings yet</p></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Ref</th><th>Guest</th><th>Property</th><th>Check-in</th><th>Check-out</th><th>Guests</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${bookings.map(b => `<tr>
+        <td><code style="font-size:0.76rem">${b.bookingRef}</code></td>
+        <td>${b.guestName}<br><span style="font-size:0.75rem;color:var(--fog)">${b.guestEmail}</span></td>
+        <td>${b.propertyName||'—'}</td>
+        <td>${b.checkIn}</td><td>${b.checkOut}</td>
+        <td>${b.guestCount||1}</td>
+        <td>₹${(b.totalAmount||0).toLocaleString('en-IN')}</td>
+        <td><span class="badge badge-${b.status||'pending'}">${b.status||'pending'}</span></td>
+        <td><button class="btn-outline-sm" onclick="viewBooking('${b.id}')">View</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch { el.innerHTML = '<div class="empty-state"><p>Error loading bookings</p></div>'; }
+}
+
+async function viewBooking(id) {
+  const bookings = await api('/api/admin/bookings').then(r => r.json());
+  const b = bookings.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bookingDetailBody').innerHTML = `
+    <div style="display:grid;gap:12px">
+      <div style="background:var(--cloud);border-radius:12px;padding:16px">
+        <div style="font-size:0.75rem;font-weight:600;color:var(--fog);letter-spacing:1px;margin-bottom:4px">BOOKING REF</div>
+        <code style="font-size:1.1rem;color:var(--pine);font-weight:700">${b.bookingRef}</code>
+      </div>
+      ${[['Guest', b.guestName],['Email', b.guestEmail],['Phone', b.guestPhone||'—'],['Property', b.propertyName||'—'],['Check-in', b.checkIn],['Check-out', b.checkOut],['Guests', b.guestCount||1],['Total Amount', '₹' + (b.totalAmount||0).toLocaleString('en-IN')],['Special Requests', b.specialRequests||'None'],['Booked On', new Date(b.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})]].map(([k,v]) => `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--mist)">
+        <span style="font-size:0.82rem;color:var(--fog);font-weight:500">${k}</span>
+        <span style="font-size:0.85rem;font-weight:500">${v}</span>
+      </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding:8px 0">
+        <span style="font-size:0.82rem;color:var(--fog);font-weight:500">Status</span>
+        <select onchange="updateBookingStatus('${b.id}',this.value)" style="border:1.5px solid var(--mist);border-radius:8px;padding:4px 10px;font-size:0.82rem;outline:none;">
+          <option ${b.status==='pending'?'selected':''}>pending</option>
+          <option ${b.status==='confirmed'?'selected':''}>confirmed</option>
+          <option ${b.status==='cancelled'?'selected':''}>cancelled</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById('bookingDetailFooter').innerHTML = `
+    <a href="mailto:${b.guestEmail}" class="btn btn-primary">✉️ Email Guest</a>
+    ${b.guestPhone ? `<a href="https://wa.me/${b.guestPhone.replace(/\D/g,'')}" target="_blank" class="btn btn-tea">💬 WhatsApp</a>` : ''}
+    <button class="btn btn-outline-sm" onclick="closeModal('bookingModal')">Close</button>`;
+  document.getElementById('bookingModal').classList.add('open');
+}
+
+async function updateBookingStatus(id, status) {
+  await api(`/api/admin/bookings/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+  showToast('Status updated', 'success');
+  loadBookings(); loadDashboard();
+}
+
+// ── GUESTS ────────────────────────────────────────────────────
+async function loadGuests() {
+  const el = document.getElementById('guestsTable');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  try {
+    const guests = await api('/api/admin/guests').then(r => r.json());
+    if (!guests.length) { el.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>No guests yet</p></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>First Booking</th></tr></thead>
+      <tbody>${guests.map(g => `<tr>
+        <td><strong>${g.name}</strong></td>
+        <td><a href="mailto:${g.email}" style="color:var(--pine)">${g.email}</a></td>
+        <td>${g.phone||'—'}</td>
+        <td>${new Date(g.firstBooking).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch { el.innerHTML = '<div class="empty-state"><p>Error loading guests</p></div>'; }
+}
+
+async function downloadGuests() {
+  try {
+    const res = await api('/api/admin/guests/export');
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `guests-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Guest list downloaded', 'success');
+  } catch {
+    showToast('Download failed', 'error');
+  }
+}
+
+// ── REVIEWS ───────────────────────────────────────────────────
+async function loadReviews() {
+  const el = document.getElementById('reviewsTable');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  try {
+    const reviews = await api('/api/admin/reviews').then(r => r.json());
+    if (!reviews.length) { el.innerHTML = '<div class="empty-state"><div class="icon">⭐</div><p>No reviews yet</p></div>'; return; }
+    el.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Guest</th><th>Rating</th><th>Review</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>${reviews.map(r => `<tr>
+        <td><strong>${r.guestName}</strong></td>
+        <td class="star-gold">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td>
+        <td style="max-width:280px">${r.comment||'—'}</td>
+        <td>${new Date(r.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')">Delete</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch { el.innerHTML = '<div class="empty-state"><p>Error loading reviews</p></div>'; }
+}
+
+async function deleteReview(id) {
+  if (!confirm('Delete this review?')) return;
+  await api(`/api/admin/reviews/${id}`, { method: 'DELETE' });
+  showToast('Review deleted');
+  loadReviews();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'propModal' && pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', (e) => { if (e.target === m) closeModal(m.id); })
+);
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>

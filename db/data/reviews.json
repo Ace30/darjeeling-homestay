@@ -1,0 +1,26 @@
+[
+  {
+    "id": "060bd799-c78e-4700-a959-6b90e6023778",
+    "createdAt": "2026-06-16T00:08:36.747Z",
+    "propertyId": "1b15739d-a224-4529-bc6e-7db8969f3a7a",
+    "guestName": "Priya Sharma",
+    "rating": 5,
+    "comment": "Absolutely magical! Waking up to Kanchenjunga at sunrise was life-changing. The hosts were incredibly warm and the tea was the best I have ever tasted."
+  },
+  {
+    "id": "26430c15-76d2-433e-9e6e-e31042a089f5",
+    "createdAt": "2026-06-16T00:08:36.747Z",
+    "propertyId": "1b15739d-a224-4529-bc6e-7db8969f3a7a",
+    "guestName": "Rahul & Meera",
+    "rating": 5,
+    "comment": "Perfect getaway from the city chaos. The cottage is cozy, the food is delicious, and the views are unreal. We will definitely be back!"
+  },
+  {
+    "id": "20644a60-6ee3-413c-90fe-a3f24c74de07",
+    "createdAt": "2026-06-16T00:08:36.747Z",
+    "propertyId": "1b15739d-a224-4529-bc6e-7db8969f3a7a",
+    "guestName": "James Mitchell",
+    "rating": 4,
+    "comment": "Beautiful property with stunning mountain views. The host family made us feel at home. Highly recommend for anyone visiting Darjeeling!"
+  }
+]
